@@ -5,6 +5,14 @@ export class PaymentDTO {
   @IsNumber()
   @IsNotEmpty()
   amount: number;
+
+  @IsString()
+  @IsNotEmpty()
+  buyer: string;
+
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  items: string[];
 }
 
 export class ConfirmationDTO {
