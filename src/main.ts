@@ -6,15 +6,13 @@ import { AppModule } from './app.module';
 import { RabbitMQ } from './common/constants';
 
 async function bootstrap() {
-  // const app = await NestFactory.createMicroservice(AppModule, {
-  //   transport: Transport.RMQ,
-  //   options: {
-  //     urls: 'amqp://user:password@localhost:5672',
-  //     queue: RabbitMQ.PaymentQueue,
-  //   },
-  // });
-  const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  const app = await NestFactory.createMicroservice(AppModule, {
+    transport: Transport.RMQ,
+    options: {
+      urls: 'amqp://user:password@localhost:5672',
+      queue: RabbitMQ.PaymentQueue,
+    },
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -27,7 +25,7 @@ async function bootstrap() {
   );
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
-  await app.listen(3001);
+  await app.listen();
   console.log('Payment Microservice is listening');
 }
 bootstrap();

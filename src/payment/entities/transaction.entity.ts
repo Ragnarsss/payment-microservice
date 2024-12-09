@@ -6,10 +6,9 @@ export type TransactionDocument = HydratedDocument<Transaction>;
 
 @Schema({
   timestamps: true,
-  _id: false,
 })
 export class Transaction extends Document {
-  @Prop({ type: uuidv4, default: uuidv4, unique: true })
+  @Prop({ type: uuidv4, default: uuidv4 })
   _id: string;
 
   @Prop({

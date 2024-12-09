@@ -10,24 +10,21 @@ import { PaymentService } from './payment.service';
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
-  @Get('transactions')
+  @MessagePattern(PaymentMSG.TRANSACTIONS)
   async getTransactions() {
     return this.paymentService.getTransactions();
   }
 
-  // @MessagePattern(PaymentMSG.TRANSACTION)
-  @Post('transaction')
+  @MessagePattern(PaymentMSG.TRANSACTION)
   async createTransaction(@Payload() paymentInput: PaymentDTO) {
     return this.paymentService.pay(paymentInput);
   }
 
-  @Post('confirm')
   @MessagePattern(PaymentMSG.CONFIRM_PAYMENT)
   async confirmTransaction(@Payload() confirmationDto: ConfirmationDTO) {
     return this.paymentService.confirmPayment(confirmationDto);
   }
 
-  @Get('check')
   @MessagePattern(PaymentMSG.CHECK_TRANSACTION)
   async checkTransaction(@Headers('token_ws') checkDto: CheckDto) {
     return this.paymentService.checkTransaction(checkDto);
