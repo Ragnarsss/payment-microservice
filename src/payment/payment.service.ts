@@ -72,4 +72,19 @@ export class PaymentService {
   async getTransactions(): Promise<any[]> {
     return await this.transactionModel.find().lean().exec();
   }
+
+  async getTransaction(order: string): Promise<any> {
+    try {
+      const transaction = await this.transactionModel
+        .findOne({ order })
+        .lean()
+        .exec();
+      if (!transaction) {
+        throw new RpcException('Transaction not found');
+      }
+      return transaction;
+    } catch (error) {
+      throw new RpcException(error.message);
+    }
+  }
 }

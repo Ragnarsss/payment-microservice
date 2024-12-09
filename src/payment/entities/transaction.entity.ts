@@ -13,6 +13,7 @@ export class Transaction extends Document {
 
   @Prop({
     required: true,
+    type: String,
   })
   order: string;
 

@@ -15,6 +15,12 @@ export class PaymentController {
     return this.paymentService.getTransactions();
   }
 
+  @MessagePattern(PaymentMSG.GET_TRANSACTION)
+  async getTransaction(@Payload() payload: any) {
+    const { order } = payload;
+    return this.paymentService.getTransaction(order);
+  }
+
   @MessagePattern(PaymentMSG.TRANSACTION)
   async createTransaction(@Payload() paymentInput: PaymentDTO) {
     return this.paymentService.pay(paymentInput);
