@@ -44,7 +44,7 @@ export class PaymentService {
     const return_url = 'http://localhost:3001/confirmT';
     const tx = new WebpayPlus.Transaction(this.txOptions);
     try {
-      await tx.create(buyOrder, sessionId, amount, return_url);
+      const response = await tx.create(buyOrder, sessionId, amount, return_url);
       const transaction = new this.transactionModel({
         order: buyOrder,
         buyer,
@@ -69,7 +69,10 @@ export class PaymentService {
       };
       await this.mailingService.sendMail(emailDetails);
 
-      return savedTransaction;
+      return {
+        ...response,
+        ...savedTransaction.toObject(),
+      };
     } catch (error) {
       console.log(error);
       throw new RpcException(error.message);
