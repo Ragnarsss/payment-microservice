@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice(AppModule, {
     transport: Transport.RMQ,
     options: {
-      urls: 'amqp://user:password@localhost:5672',
+      urls: ['amqp://user:password@rabbitmq_integrador:5672'],
       queue: RabbitMQ.PaymentQueue,
     },
   });
@@ -23,7 +23,7 @@ async function bootstrap() {
       },
     }),
   );
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  // app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   await app.listen();
   console.log('Payment Microservice is listening');

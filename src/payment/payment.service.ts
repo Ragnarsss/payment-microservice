@@ -28,7 +28,7 @@ export class PaymentService {
       Environment.Integration,
     );
   }
-  async pay({ amount, buyer, items }: PaymentDTO): Promise<string> {
+  async pay({ amount, buyer, items }: PaymentDTO): Promise<any> {
     const buyOrder = 'O-' + Math.floor(Math.random() * 1000);
     const sessionId = 'S-' + Math.floor(Math.random() * 100);
     const return_url = 'http://localhost:3001/confirmT';
@@ -42,9 +42,12 @@ export class PaymentService {
         items,
         status: 'CREATED',
       });
-      await transaction.save();
-      return response;
+      console.log('transaction', transaction);
+      const savedTransaction = await transaction.save();
+      console.log('savedTransaction', savedTransaction);
+      return savedTransaction;
     } catch (error) {
+      console.log(error);
       throw new RpcException(error.message);
     }
   }
