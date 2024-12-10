@@ -13,5 +13,5 @@ export enum PaymentMSG {
 }
 
 export enum UserMSG {
-  UPDATE_TRANSACTIONS = 'UPDATE_TRANSACTIONS',
+  FIND_ONE_BY_ID = 'FIND_ONE_BY_ID',
 }

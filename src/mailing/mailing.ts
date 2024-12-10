@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { SendEmailDto } from './dto/send-email.dto';
-import { fillTemplate } from './templates/email';
 
 @Injectable()
 export class MailingProvider {
@@ -17,17 +16,15 @@ export class MailingProvider {
   });
   async sendMail(emailDetails: SendEmailDto) {
     try {
+      const emailText = `Order: ${emailDetails.order} \n Amount: ${emailDetails.amount} \n Items: ${emailDetails.items}`;
+
       // send mail with defined transport object
-      const info = await this.transporter.sendMail({
-        from: emailDetails.from, // sender address
+      await this.transporter.sendMail({
+        from: '"Maddison Foo Koch 👻" <maddison53@ethereal.email>', // sender address
         to: emailDetails.sendTo, // list of receivers
         subject: emailDetails.subject, // Subject line
-        text: 'Hello world?', // plain text body
-        html: fillTemplate(emailDetails), // html body
+        text: emailText, // plain text body
       });
-
-      console.log('Message sent: %s', info.messageId);
-      // Message sent: <d786aa62-4e0a-070a-47ed-0b0666549519@ethereal.email>
     } catch (error) {
       throw new Error(error);
     }

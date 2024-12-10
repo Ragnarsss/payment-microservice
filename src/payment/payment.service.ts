@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -16,20 +16,27 @@ import {
 } from './entities/transaction.entity';
 import { MailingService } from 'src/mailing/mailing.service';
 import { SendEmailDto } from 'src/mailing/dto/send-email.dto';
+import { ClientProxyService } from 'src/common/proxy/client-proxy';
+import { RabbitMQ, UserMSG } from 'src/common/constants';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class PaymentService {
   private txOptions: Options;
+  private readonly userProxy: ClientProxy;
+
   constructor(
     @InjectModel(Transaction.name)
     private transactionModel: Model<TransactionDocument>,
     private readonly mailingService: MailingService,
+    private readonly clientProxyService: ClientProxyService,
   ) {
     this.txOptions = new Options(
       IntegrationCommerceCodes.WEBPAY_PLUS,
       IntegrationApiKeys.WEBPAY,
       Environment.Integration,
     );
+    this.userProxy = this.clientProxyService.getClientProxy(RabbitMQ.UserQueue);
   }
   async pay({ amount, buyer, items }: PaymentDTO): Promise<any> {
     const buyOrder = 'O-' + Math.floor(Math.random() * 1000);
@@ -46,18 +53,21 @@ export class PaymentService {
         status: 'CREATED',
       });
 
+      const user = await firstValueFrom(
+        this.userProxy.send(UserMSG.FIND_ONE_BY_ID, buyer),
+      );
+
       const savedTransaction = await transaction.save();
 
-      // const emailDetails: SendEmailDto = {
-      //   sendTo: 'email',
-      //   subject: 'Payment Confirmation',
-      //   from: '[email protected]',
-      //   template: 'paymentConfirmation',
-      //   order: buyOrder,
-      //   amount: amount,
-      //   items: items,
-      // };
-      // await this.mailingService.sendMail(emailDetails);
+      const emailDetails: SendEmailDto = {
+        sendTo: user.email,
+        subject: 'Payment Confirmation',
+        from: '[email protected]',
+        order: buyOrder,
+        amount: amount,
+        items: items,
+      };
+      await this.mailingService.sendMail(emailDetails);
 
       return savedTransaction;
     } catch (error) {

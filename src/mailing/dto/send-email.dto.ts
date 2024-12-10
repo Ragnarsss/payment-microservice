@@ -15,10 +15,6 @@ export class SendEmailDto {
 
   @IsString()
   @IsNotEmpty()
-  template: string;
-
-  @IsString()
-  @IsNotEmpty()
   order: string;
 
   @IsNumber()
