@@ -1,5 +1,6 @@
 export enum RabbitMQ {
   PaymentQueue = 'payment_queue',
+  UserQueue = 'user_queue',
 }
 
 export enum PaymentMSG {
@@ -8,4 +9,8 @@ export enum PaymentMSG {
   TRANSACTIONS = 'TRANSACTIONS',
   CONFIRM_PAYMENT = 'CONFIRM_PAYMENT',
   CHECK_TRANSACTION = 'CHECK_TRANSACTION',
+}
+
+export enum UserMSG {
+  UPDATE_TRANSACTIONS = 'UPDATE_TRANSACTIONS',
 }

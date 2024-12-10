@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import {
   Environment,
   IntegrationApiKeys,
@@ -14,19 +14,24 @@ import {
   TransactionDocument,
 } from './entities/transaction.entity';
 import { Model } from 'mongoose';
+import { ClientProxyService } from 'src/common/proxy/client-proxy';
+import { RabbitMQ, UserMSG } from 'src/common/constants';
 
 @Injectable()
 export class PaymentService {
   private txOptions: Options;
+  private readonly userProxy: ClientProxy;
   constructor(
     @InjectModel(Transaction.name)
     private transactionModel: Model<TransactionDocument>,
+    private readonly clientProxyService: ClientProxyService,
   ) {
     this.txOptions = new Options(
       IntegrationCommerceCodes.WEBPAY_PLUS,
       IntegrationApiKeys.WEBPAY,
       Environment.Integration,
     );
+    this.userProxy = this.clientProxyService.getClientProxy(RabbitMQ.UserQueue);
   }
   async pay({ amount, buyer, items }: PaymentDTO): Promise<any> {
     const buyOrder = 'O-' + Math.floor(Math.random() * 1000);
@@ -42,9 +47,13 @@ export class PaymentService {
         items,
         status: 'CREATED',
       });
-      console.log('transaction', transaction);
       const savedTransaction = await transaction.save();
-      console.log('savedTransaction', savedTransaction);
+
+      this.userProxy.send(UserMSG.UPDATE_TRANSACTIONS, {
+        userId: buyer,
+        buyOrder,
+      });
+
       return savedTransaction;
     } catch (error) {
       console.log(error);
