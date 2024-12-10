@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PaymentModule } from './payment/payment.module';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
+import { MailingModule } from './mailing/mailing.module';
 import config from './config';
 import * as Joi from 'joi';
 
@@ -20,14 +21,12 @@ import * as Joi from 'joi';
         DATABASE_PORT: Joi.number().required(),
         DATABASE_HOST: Joi.string().required(),
         DATABASE_CONNECTION: Joi.string().required(),
-        RABBITMQ_HOST: Joi.string().required(),
-        RABBITMQ_PORT: Joi.number().required(),
-        RABBITMQ_USERNAME: Joi.string().required(),
-        RABBITMQ_PASSWORD: Joi.string().required(),
+        AMQP_URL: Joi.string().required(),
       }),
     }),
     PaymentModule,
     DatabaseModule,
+    MailingModule,
   ],
 })
 export class AppModule {}

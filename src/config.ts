@@ -10,9 +10,6 @@ export default registerAs('config', () => ({
     connection: process.env.DATABASE_CONNECTION,
   },
   rabbitmq: {
-    host: process.env.RABBITMQ_HOST,
-    port: parseInt(process.env.RABBITMQ_PORT, 10),
-    username: process.env.RABBITMQ_USERNAME,
-    password: process.env.RABBITMQ_PASSWORD,
+    amqp_url: process.env.AMQP_URL,
   },
 }));

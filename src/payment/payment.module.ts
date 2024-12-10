@@ -3,7 +3,7 @@ import { PaymentService } from './payment.service';
 import { PaymentController } from './payment.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Transaction, TransactionSchema } from './entities/transaction.entity';
-import { ClientProxyService } from 'src/common/proxy/client-proxy';
+import { MailingModule } from 'src/mailing/mailing.module';
 
 @Module({
   imports: [
@@ -13,8 +13,9 @@ import { ClientProxyService } from 'src/common/proxy/client-proxy';
         schema: TransactionSchema,
       },
     ]),
+    MailingModule,
   ],
-  providers: [PaymentService, ClientProxyService],
+  providers: [PaymentService],
   controllers: [PaymentController],
 })
 export class PaymentModule {}

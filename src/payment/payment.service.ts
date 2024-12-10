@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { RpcException } from '@nestjs/microservices';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import {
   Environment,
   IntegrationApiKeys,
@@ -8,30 +10,26 @@ import {
   WebpayPlus,
 } from 'transbank-sdk';
 import { CheckDto, ConfirmationDTO, PaymentDTO } from './dto/payment.dto';
-import { InjectModel } from '@nestjs/mongoose';
 import {
   Transaction,
   TransactionDocument,
 } from './entities/transaction.entity';
-import { Model } from 'mongoose';
-import { ClientProxyService } from 'src/common/proxy/client-proxy';
-import { RabbitMQ, UserMSG } from 'src/common/constants';
+import { MailingService } from 'src/mailing/mailing.service';
+import { SendEmailDto } from 'src/mailing/dto/send-email.dto';
 
 @Injectable()
 export class PaymentService {
   private txOptions: Options;
-  private readonly userProxy: ClientProxy;
   constructor(
     @InjectModel(Transaction.name)
     private transactionModel: Model<TransactionDocument>,
-    private readonly clientProxyService: ClientProxyService,
+    private readonly mailingService: MailingService,
   ) {
     this.txOptions = new Options(
       IntegrationCommerceCodes.WEBPAY_PLUS,
       IntegrationApiKeys.WEBPAY,
       Environment.Integration,
     );
-    this.userProxy = this.clientProxyService.getClientProxy(RabbitMQ.UserQueue);
   }
   async pay({ amount, buyer, items }: PaymentDTO): Promise<any> {
     const buyOrder = 'O-' + Math.floor(Math.random() * 1000);
@@ -39,7 +37,7 @@ export class PaymentService {
     const return_url = 'http://localhost:3001/confirmT';
     const tx = new WebpayPlus.Transaction(this.txOptions);
     try {
-      const response = await tx.create(buyOrder, sessionId, amount, return_url);
+      await tx.create(buyOrder, sessionId, amount, return_url);
       const transaction = new this.transactionModel({
         order: buyOrder,
         buyer,
@@ -47,12 +45,19 @@ export class PaymentService {
         items,
         status: 'CREATED',
       });
+
       const savedTransaction = await transaction.save();
 
-      this.userProxy.send(UserMSG.UPDATE_TRANSACTIONS, {
-        userId: buyer,
-        buyOrder,
-      });
+      // const emailDetails: SendEmailDto = {
+      //   sendTo: 'email',
+      //   subject: 'Payment Confirmation',
+      //   from: '[email protected]',
+      //   template: 'paymentConfirmation',
+      //   order: buyOrder,
+      //   amount: amount,
+      //   items: items,
+      // };
+      // await this.mailingService.sendMail(emailDetails);
 
       return savedTransaction;
     } catch (error) {
@@ -98,5 +103,9 @@ export class PaymentService {
     } catch (error) {
       throw new RpcException(error.message);
     }
+  }
+
+  async getUserTransactions(user: string): Promise<any[]> {
+    return await this.transactionModel.find({ buyer: user }).lean().exec();
   }
 }

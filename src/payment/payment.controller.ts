@@ -1,4 +1,4 @@
-import { Controller, Get, Headers, Post } from '@nestjs/common';
+import { Controller, Headers } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
 import { PaymentMSG } from 'src/common/constants';
@@ -34,5 +34,11 @@ export class PaymentController {
   @MessagePattern(PaymentMSG.CHECK_TRANSACTION)
   async checkTransaction(@Headers('token_ws') checkDto: CheckDto) {
     return this.paymentService.checkTransaction(checkDto);
+  }
+
+  @MessagePattern(PaymentMSG.USER_TRANSACTIONS)
+  async getUserTransactions(@Payload() payload: any) {
+    const { user } = payload;
+    return this.paymentService.getUserTransactions(user);
   }
 }

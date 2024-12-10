@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice(AppModule, {
     transport: Transport.RMQ,
     options: {
-      urls: ['amqp://user:password@rabbitmq_integrador:5672'],
+      urls: [process.env.AMQP_URL],
       queue: RabbitMQ.PaymentQueue,
     },
   });
