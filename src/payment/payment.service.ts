@@ -41,7 +41,7 @@ export class PaymentService {
   async pay({ amount, buyer, items }: PaymentDTO): Promise<any> {
     const buyOrder = 'O-' + Math.floor(Math.random() * 1000);
     const sessionId = 'S-' + Math.floor(Math.random() * 100);
-    const return_url = 'http://localhost:3001/confirmT';
+    const return_url = 'http://localhost:5000/confirmT';
     const tx = new WebpayPlus.Transaction(this.txOptions);
     try {
       const response = await tx.create(buyOrder, sessionId, amount, return_url);
@@ -81,8 +81,10 @@ export class PaymentService {
 
   async confirmPayment({ token }: ConfirmationDTO): Promise<string> {
     try {
+      console.log('token', token);
       const tx = new WebpayPlus.Transaction(this.txOptions);
       const response = await tx.commit(token);
+      console.log('response', response);
       return response;
     } catch (error) {
       throw new RpcException(error.message);
